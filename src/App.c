@@ -1,6 +1,6 @@
 #include "Igneous.h"
 
-BOOL Igneous_App_Running(Igneous_App *this)
+BOOL Igneous_App_get_Running(Igneous_App *this)
 {
     HWND window = {};
     WCHAR applicationUserModelId[APPLICATION_USER_MODEL_ID_MAX_LENGTH] = {};

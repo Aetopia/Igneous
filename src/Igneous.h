@@ -23,7 +23,7 @@ Igneous_App Igneous_Minecraft_Release;
 
 Igneous_App Igneous_Minecraft_Preview;
 
-BOOL Igneous_App_Running(Igneous_App *);
+BOOL Igneous_App_get_Running(Igneous_App *);
 
 HRESULT Igneous_App_Launch(Igneous_App *, PDWORD);
 
