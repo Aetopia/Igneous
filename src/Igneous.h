@@ -7,29 +7,24 @@
 #include <windows.h>
 #include <appmodel.h>
 #include <shobjidl.h>
-#include <shlobj.h>
 
-typedef struct App
+typedef struct
 {
-    WCHAR Id[APPLICATION_USER_MODEL_ID_MAX_LENGTH];
-    WCHAR Name[PACKAGE_FAMILY_NAME_MAX_LENGTH + 1];
-    WCHAR File[MAX_PATH];
-} App;
+    WCHAR ApplicationUserModelId[APPLICATION_USER_MODEL_ID_MAX_LENGTH];
+    WCHAR PackageFamilyName[PACKAGE_FAMILY_NAME_MAX_LENGTH + 1];
+    WCHAR Path[MAX_PATH];
+} Igneous_App;
 
-IApplicationActivationManager *Igneous_App_Manager = {};
+IApplicationActivationManager *Igneous_App_Manager;
 
-IPackageDebugSettings *Igneous_App_Settings = {};
+IPackageDebugSettings *Igneous_App_Settings;
 
-App Igneous_Minecraft_Release = {.Id = L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-                                 .Name = L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"};
+Igneous_App Igneous_Minecraft_Release;
 
-App Igneous_Minecraft_Preview = {.Id = L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App",
-                                 .Name = L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"};
+Igneous_App Igneous_Minecraft_Preview;
 
-BOOL Igneous_Load();
+BOOL Igneous_App_Running(Igneous_App *);
 
-BOOL Igneous_Free();
+HRESULT Igneous_App_Launch(Igneous_App *, PDWORD);
 
-HRESULT Igneous_App_Launch(App *, PDWORD);
-
-HRESULT Igneous_App_Terminate(App *);
+HRESULT Igneous_App_Terminate(Igneous_App *);

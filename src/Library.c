@@ -1,12 +1,12 @@
 #include "Igneous.h"
 
-BOOL Initialized = {};
+BOOL Igneous_Library_Initialized = {};
 
-BOOL Igneous_Load()
+BOOL Igneous_Library_Initialize()
 {
-    if (!Initialized)
+    if (!Igneous_Library_Initialized)
     {
-        Initialized = TRUE;
+        Igneous_Library_Initialized = TRUE;
 
         CoInitializeEx(NULL, COINIT_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -18,20 +18,20 @@ BOOL Igneous_Load()
 
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_"
                                   L"8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftpe\\resource_init_lock",
-                                  Igneous_Minecraft_Release.File, MAX_PATH);
+                                  Igneous_Minecraft_Release.Path, MAX_PATH);
 
         ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftWindowsBeta_"
                                   L"8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftpe\\resource_init_lock",
-                                  Igneous_Minecraft_Preview.File, MAX_PATH);
+                                  Igneous_Minecraft_Preview.Path, MAX_PATH);
     }
-    return Initialized;
+    return Igneous_Library_Initialized;
 }
 
-BOOL Igneous_Free()
+BOOL Igneous_Library_Uninitialize()
 {
-    if (Initialized)
+    if (Igneous_Library_Initialized)
     {
-        Initialized = FALSE;
+        Igneous_Library_Initialized = FALSE;
 
         IApplicationActivationManager_Release(Igneous_App_Manager);
 
@@ -39,5 +39,5 @@ BOOL Igneous_Free()
 
         CoUninitialize();
     }
-    return Initialized;
+    return Igneous_Library_Initialized;
 }
