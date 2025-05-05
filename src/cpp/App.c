@@ -1,5 +1,18 @@
 #include "Igneous.h"
 
+IApplicationActivationManager *Igneous_App_Manager = {};
+
+IPackageDebugSettings *Igneous_App_Settings = {};
+
+BOOL Igneous_App_get_Installed(Igneous_App *this)
+{
+    UINT32 value = {};
+
+    GetPackagesByPackageFamily(this->PackageFamilyName, &value, NULL, &(UINT32){}, NULL);
+
+    return value;
+}
+
 BOOL Igneous_App_get_Running(Igneous_App *this)
 {
     HWND window = {};
@@ -9,7 +22,7 @@ BOOL Igneous_App_get_Running(Igneous_App *this)
     {
         DWORD processId = {};
         GetWindowThreadProcessId(window, &processId);
-      
+
         HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
 
         if (!GetApplicationUserModelId(process, &(UINT32){ARRAYSIZE(applicationUserModelId)}, applicationUserModelId) &&

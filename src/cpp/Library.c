@@ -2,7 +2,7 @@
 
 BOOL Igneous_Library_Initialized = {};
 
-BOOL Igneous_Library_Initialize()
+VOID Igneous_Library_Initialize()
 {
     if (!Igneous_Library_Initialized)
     {
@@ -24,10 +24,9 @@ BOOL Igneous_Library_Initialize()
                                   L"8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftpe\\resource_init_lock",
                                   Igneous_Minecraft_Preview.Path, MAX_PATH);
     }
-    return Igneous_Library_Initialized;
 }
 
-BOOL Igneous_Library_Uninitialize()
+VOID Igneous_Library_Uninitialize()
 {
     if (Igneous_Library_Initialized)
     {
@@ -39,5 +38,4 @@ BOOL Igneous_Library_Uninitialize()
 
         CoUninitialize();
     }
-    return Igneous_Library_Initialized;
 }

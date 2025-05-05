@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net481</TargetFramework>
+    <LangVersion>latest</LangVersion> <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+
+  <Target Name="Igneous" AfterTargets="Restore">
+    <Exec Command="$(ProjectDir)..\cpp\Igneous.cmd" />
+    <Copy SourceFiles="$(ProjectDir)..\cpp\bin\Igneous.dll" DestinationFolder="$(OutputPath)" />
+  </Target>
+</Project>
