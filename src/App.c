@@ -1,4 +1,4 @@
-#include "Igneous.h"
+#include "include/Igneous.h"
 
 IApplicationActivationManager *Igneous_App_Manager = {};
 
