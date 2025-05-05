@@ -11,10 +11,10 @@ A library for managing & interacting with Minecraft: Bedrock Edition.
     pacman -Syu --noconfirm
     ```
 
-3. Install [GCC](https://gcc.gnu.org) & [MinHook](https://github.com/TsudaKageyu/minhook) using:
+3. Install [GCC](https://gcc.gnu.org) using:
 
     ```bash
-    pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-MinHook --noconfirm
+    pacman -S mingw-w64-ucrt-x86_64-gcc --noconfirm
     ```
 
 3. Make sure `<MSYS2 Installation Directory>\ucrt64\bin` is added to the Windows `PATH` environment variable.
