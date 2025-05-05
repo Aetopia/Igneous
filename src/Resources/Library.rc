@@ -9,7 +9,7 @@ BEGIN
 VALUE "FileDescription", "Igneous"
 VALUE "ProductName", "Igneous"
 VALUE "ProductVersion", "1.0.0.0"
-VALUE "LegalCopyright", "Copyright (C) 25"
+VALUE "LegalCopyright", "Copyright (C) 2025"
 END
 END
 BLOCK "VarFileInfo"
