@@ -23,7 +23,7 @@ BOOL Igneous_App_get_Running(Igneous_App *this)
         DWORD processId = {};
         GetWindowThreadProcessId(window, &processId);
 
-        HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
+        HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, processId);
 
         if (!GetApplicationUserModelId(process, &(UINT32){ARRAYSIZE(applicationUserModelId)}, applicationUserModelId) &&
             CompareStringOrdinal(this->ApplicationUserModelId, -1, applicationUserModelId, -1, TRUE) == CSTR_EQUAL)

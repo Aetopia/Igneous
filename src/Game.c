@@ -10,7 +10,7 @@ HRESULT Igneous_Game_Launch(Igneous_App *this, PDWORD value)
         if (FAILED(result))
             goto _;
 
-        HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, *value);
+        HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, *value);
 
         while (file == INVALID_HANDLE_VALUE)
         {
