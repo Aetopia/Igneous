@@ -1,3 +1,3 @@
 # Igneous
 
-A native library for managing & interacting with Minecraft: Bedrock Edition.
+A shared library for managing & interacting with Minecraft: Bedrock Edition.
