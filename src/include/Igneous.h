@@ -24,6 +24,8 @@ __declspec(dllexport) BOOL Igneous_App_get_Installed(Igneous_App *);
 
 __declspec(dllexport) BOOL Igneous_App_get_Running(Igneous_App *);
 
+__declspec(dllexport) HRESULT Igneous_App_set_Debug(Igneous_App *, BOOL);
+
 __declspec(dllexport) HRESULT Igneous_App_Launch(Igneous_App *, PDWORD);
 
 __declspec(dllexport) HRESULT Igneous_App_Terminate(Igneous_App *);

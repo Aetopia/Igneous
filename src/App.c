@@ -38,6 +38,18 @@ BOOL Igneous_App_get_Running(Igneous_App *this)
     return FALSE;
 }
 
+HRESULT Igneous_App_set_Debug(Igneous_App *this, BOOL value)
+{
+    WCHAR packageFullName[PACKAGE_FAMILY_NAME_MAX_LENGTH + 1] = {};
+
+    GetPackagesByPackageFamily(this->PackageFamilyName, &(UINT32){PACKAGE_GRAPH_MIN_SIZE}, &(PWSTR){},
+                               &(UINT32){ARRAYSIZE(packageFullName)}, packageFullName);
+
+    if (value)
+        return IPackageDebugSettings_EnableDebugging(Igneous_App_Settings, packageFullName, NULL, NULL);
+    return IPackageDebugSettings_DisableDebugging(Igneous_App_Settings, packageFullName);
+}
+
 HRESULT Igneous_App_Launch(Igneous_App *this, PDWORD value)
 {
     return IApplicationActivationManager_ActivateApplication(Igneous_App_Manager, this->ApplicationUserModelId, NULL,
