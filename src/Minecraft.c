@@ -20,10 +20,10 @@ BOOL InitOnceCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context)
 
     CoInitializeEx(NULL, COINITBASE_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
 
-    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_HANDLER,
+    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL,  CLSCTX_INPROC_SERVER,
                      &IID_IApplicationActivationManager, (PVOID)&Manager);
 
-    CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_HANDLER, &IID_IPackageDebugSettings,
+    CoCreateInstance(&CLSID_PackageDebugSettings, NULL,  CLSCTX_INPROC_SERVER, &IID_IPackageDebugSettings,
                      (PVOID)&Settings);
 
     return TRUE;
