@@ -1,47 +1,101 @@
-#include   "include/Igneous.h"
+#include "Igneous.h"
 
-HRESULT Igneous_Game_Launch(Igneous_App *this, PDWORD value)
+IPackageDebugSettings *Settings = {};
+
+IApplicationActivationManager *Manager = {};
+
+__declspec(dllexport) BOOL Game_get_Installed(Game *This)
 {
-    HANDLE file = CreateFile2(this->Path, (DWORD){}, FILE_SHARE_DELETE, OPEN_EXISTING, NULL);
+    UINT32 Value = {};
+    GetPackagesByPackageFamily(This->PackageFamilyName, &Value, NULL, &(UINT32){}, NULL);
+    return Value;
+}
 
-    if (!Igneous_App_get_Running(this) || file != INVALID_HANDLE_VALUE)
+__declspec(dllexport) BOOL Game_get_Running(Game *This)
+{
+    HWND hWnd = {};
+    WCHAR ApplicationUserModelId[APPLICATION_USER_MODEL_ID_MAX_LENGTH] = {};
+
+    while ((hWnd = FindWindowExW(NULL, hWnd, L"MSCTFIME UI", NULL)))
     {
-        HRESULT result = Igneous_App_Launch(this, value);
-        if (FAILED(result))
-            goto _;
+        DWORD dwProcessId = {};
+        GetWindowThreadProcessId(hWnd, &dwProcessId);
 
-        HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, *value);
+        HANDLE hProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, dwProcessId);
 
-        while (file == INVALID_HANDLE_VALUE)
+        if (!GetApplicationUserModelId(hProcess, &(UINT32){ARRAYSIZE(ApplicationUserModelId)},
+                                       ApplicationUserModelId) &&
+            CompareStringOrdinal(ApplicationUserModelId, -1, This->ApplicationUserModelId, -1, TRUE) == CSTR_EQUAL)
         {
-            if (WaitForSingleObject(process, TRUE) != WAIT_TIMEOUT)
-            {
-                result = S_FALSE;
-                goto _;
-            }
-            file = CreateFile2(this->Path, (DWORD){}, FILE_SHARE_DELETE, OPEN_EXISTING, NULL);
+            CloseHandle(hProcess);
+            return TRUE;
         }
 
-        FILE_STANDARD_INFO info = {};
-
-        while (TRUE)
-        {
-            if (WaitForSingleObject(process, TRUE) != WAIT_TIMEOUT)
-            {
-                result = S_FALSE;
-                goto _;
-            }
-
-            GetFileInformationByHandleEx(file, FileStandardInfo, &info, sizeof(info));
-            if (info.DeletePending)
-                break;
-        }
-
-    _:
-        CloseHandle(file);
-        CloseHandle(process);
-        return result;
+        CloseHandle(hProcess);
     }
 
-    return Igneous_App_Launch(this, value);
+    return FALSE;
+}
+
+__declspec(dllexport) HRESULT Game_Launch(Game *This, PDWORD Value)
+{
+    HANDLE hFile = CreateFile2(This->Path, (DWORD){}, FILE_SHARE_DELETE, OPEN_EXISTING, NULL);
+
+    if (!Game_get_Running(This) || hFile != INVALID_HANDLE_VALUE)
+    {
+        HRESULT hResult = IApplicationActivationManager_ActivateApplication(Manager, This->ApplicationUserModelId, NULL,
+                                                                            AO_NOERRORUI, Value);
+        if (FAILED(hResult))
+            goto _;
+
+        HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, *Value);
+
+        while (hFile == INVALID_HANDLE_VALUE)
+            if (WaitForSingleObject(hProcess, TRUE) != WAIT_TIMEOUT)
+            {
+                hResult = S_FALSE;
+                goto _;
+            }
+            else
+                hFile = CreateFile2(This->Path, (DWORD){}, FILE_SHARE_DELETE, OPEN_EXISTING, NULL);
+
+        FILE_STANDARD_INFO FileInformation = {};
+
+        while (TRUE)
+            if (WaitForSingleObject(hProcess, TRUE) != WAIT_TIMEOUT)
+            {
+                hResult = S_FALSE;
+                goto _;
+            }
+            else if (GetFileInformationByHandleEx(hFile, FileStandardInfo, &FileInformation,
+                                                  sizeof(FILE_STANDARD_INFO)) &&
+                     FileInformation.DeletePending)
+                break;
+    _:
+        CloseHandle(hFile);
+        CloseHandle(hProcess);
+        return hResult;
+    }
+
+    return IApplicationActivationManager_ActivateApplication(Manager, This->ApplicationUserModelId, NULL, AO_NOERRORUI,
+                                                             Value);
+}
+
+__declspec(dllexport) HRESULT Game_set_Debug(Game *This, BOOL Value)
+{
+    WCHAR PackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
+    GetPackagesByPackageFamily(This->PackageFamilyName, &(UINT32){PACKAGE_GRAPH_MIN_SIZE}, &(PWSTR){},
+                               &(UINT32){ARRAYSIZE(PackageFullName)}, PackageFullName);
+
+    return Value ? IPackageDebugSettings_EnableDebugging(Settings, PackageFullName, NULL, NULL)
+                 : IPackageDebugSettings_DisableDebugging(Settings, PackageFullName);
+}
+
+__declspec(dllexport) HRESULT Game_Terminate(Game *This)
+{
+    WCHAR PackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
+    GetPackagesByPackageFamily(This->PackageFamilyName, &(UINT32){PACKAGE_GRAPH_MIN_SIZE}, &(PWSTR){},
+                               &(UINT32){ARRAYSIZE(PackageFullName)}, PackageFullName);
+
+    return IPackageDebugSettings_TerminateAllProcesses(Settings, PackageFullName);
 }

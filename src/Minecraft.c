@@ -1,7 +1,42 @@
-#include "include/Igneous.h"
+#include "Igneous.h"
 
-Igneous_App Igneous_Minecraft_Release = {.ApplicationUserModelId = L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
-                                         .PackageFamilyName = L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"};
+Game Release = {.ApplicationUserModelId = L"Microsoft.MinecraftUWP_8wekyb3d8bbwe!App",
+                .PackageFamilyName = L"Microsoft.MinecraftUWP_8wekyb3d8bbwe"};
 
-Igneous_App Igneous_Minecraft_Preview = {.ApplicationUserModelId = L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App",
-                                         .PackageFamilyName = L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"};
+Game Preview = {.ApplicationUserModelId = L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe!App",
+                .PackageFamilyName = L"Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe"};
+
+INIT_ONCE InitOnce = INIT_ONCE_STATIC_INIT;
+
+BOOL InitOnceCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context)
+{
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_"
+                              L"8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftpe\\resource_init_lock",
+                              Release.Path, MAX_PATH);
+
+    ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftWindowsBeta_"
+                              L"8wekyb3d8bbwe\\LocalState\\games\\com.mojang\\minecraftpe\\resource_init_lock",
+                              Preview.Path, MAX_PATH);
+
+    CoInitializeEx(NULL, COINITBASE_MULTITHREADED | COINIT_DISABLE_OLE1DDE);
+
+    CoCreateInstance(&CLSID_ApplicationActivationManager, NULL, CLSCTX_INPROC_HANDLER,
+                     &IID_IApplicationActivationManager, (PVOID)&Manager);
+
+    CoCreateInstance(&CLSID_PackageDebugSettings, NULL, CLSCTX_INPROC_HANDLER, &IID_IPackageDebugSettings,
+                     (PVOID)&Settings);
+
+    return TRUE;
+}
+
+__declspec(dllexport) Game *Minecraft_get_Release()
+{
+    InitOnceExecuteOnce(&InitOnce, InitOnceCallback, NULL, NULL);
+    return &Release;
+}
+
+__declspec(dllexport) Game *Minecraft_get_Preview()
+{
+    InitOnceExecuteOnce(&InitOnce, InitOnceCallback, NULL, NULL);
+    return &Preview;
+}
