@@ -4,14 +4,14 @@ IPackageDebugSettings *Settings = {};
 
 IApplicationActivationManager *Manager = {};
 
-__declspec(dllexport) BOOL Game_get_Installed(Game *This)
+__declspec(dllexport) BOOL WINAPI Game_get_Installed(Game *This)
 {
     UINT32 Value = {};
     GetPackagesByPackageFamily(This->PackageFamilyName, &Value, NULL, &(UINT32){}, NULL);
     return Value;
 }
 
-__declspec(dllexport) BOOL Game_get_Running(Game *This)
+__declspec(dllexport) BOOL WINAPI Game_get_Running(Game *This)
 {
     HWND hWnd = {};
     WCHAR ApplicationUserModelId[APPLICATION_USER_MODEL_ID_MAX_LENGTH] = {};
@@ -37,7 +37,7 @@ __declspec(dllexport) BOOL Game_get_Running(Game *This)
     return FALSE;
 }
 
-__declspec(dllexport) HRESULT Game_Launch(Game *This, PDWORD Value)
+__declspec(dllexport) HRESULT WINAPI Game_Launch(Game *This, PDWORD Value)
 {
     HANDLE hFile = CreateFile2(This->Path, (DWORD){}, FILE_SHARE_DELETE, OPEN_EXISTING, NULL);
 
@@ -81,7 +81,7 @@ __declspec(dllexport) HRESULT Game_Launch(Game *This, PDWORD Value)
                                                              Value);
 }
 
-__declspec(dllexport) HRESULT Game_set_Debug(Game *This, BOOL Value)
+__declspec(dllexport) HRESULT WINAPI Game_set_Debug(Game *This, BOOL Value)
 {
     WCHAR PackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
     GetPackagesByPackageFamily(This->PackageFamilyName, &(UINT32){PACKAGE_GRAPH_MIN_SIZE}, &(PWSTR){},
@@ -91,7 +91,7 @@ __declspec(dllexport) HRESULT Game_set_Debug(Game *This, BOOL Value)
                  : IPackageDebugSettings_DisableDebugging(Settings, PackageFullName);
 }
 
-__declspec(dllexport) HRESULT Game_Terminate(Game *This)
+__declspec(dllexport) HRESULT WINAPI Game_Terminate(Game *This)
 {
     WCHAR PackageFullName[PACKAGE_FULL_NAME_MAX_LENGTH + 1] = {};
     GetPackagesByPackageFamily(This->PackageFamilyName, &(UINT32){PACKAGE_GRAPH_MIN_SIZE}, &(PWSTR){},

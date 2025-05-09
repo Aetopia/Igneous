@@ -3,6 +3,10 @@
 A library for managing & interacting with Minecraft: Bedrock Edition.
 
 ## Build
+
+> [!CAUTION]
+> The provided build script builds for `x64`.
+
 1. Install [MSYS2](https://www.msys2.org) & [UPX](https://upx.github.io) for optional compression.
 
 2. Update the MSYS2 Environment until there are no pending updates using:

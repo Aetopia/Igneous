@@ -8,7 +8,7 @@ Game Preview = {.ApplicationUserModelId = L"Microsoft.MinecraftWindowsBeta_8weky
 
 INIT_ONCE InitOnce = INIT_ONCE_STATIC_INIT;
 
-BOOL InitOnceCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context)
+BOOL WINAPI InitOnceCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context)
 {
     ExpandEnvironmentStringsW(L"%LOCALAPPDATA%\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe"
                               L"\\LocalState\\games\\com.mojang\\minecraftpe\\resource_init_lock",
@@ -29,13 +29,13 @@ BOOL InitOnceCallback(PINIT_ONCE InitOnce, PVOID Parameter, PVOID *Context)
     return TRUE;
 }
 
-__declspec(dllexport) Game *Minecraft_get_Release()
+__declspec(dllexport) Game *WINAPI Minecraft_get_Release()
 {
     InitOnceExecuteOnce(&InitOnce, InitOnceCallback, NULL, NULL);
     return &Release;
 }
 
-__declspec(dllexport) Game *Minecraft_get_Preview()
+__declspec(dllexport) Game *WINAPI Minecraft_get_Preview()
 {
     InitOnceExecuteOnce(&InitOnce, InitOnceCallback, NULL, NULL);
     return &Preview;
