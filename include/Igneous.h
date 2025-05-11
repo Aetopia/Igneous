@@ -22,7 +22,7 @@ extern "C"
     BOOL WINAPI Game_get_Running(PVOID);
 
     /*
-        Launches a game.
+        Launch a game.
         [In] Handle to a game.
         [Out] The process identifer.
     */
