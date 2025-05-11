@@ -8,37 +8,37 @@ extern "C"
 #endif
 
     /*
-        Check if a game is installed.
-        [In] Handle to a game.
+        Check if Minecraft is installed.
+        [In] Handle to Minecraft.
     */
 
     BOOL WINAPI Game_get_Installed(PVOID);
 
     /*
-        Check if a game is running.
-        [In] Handle to a game.
+        Check if Minecraft is running.
+        [In] Handle to Minecraft.
     */
 
     BOOL WINAPI Game_get_Running(PVOID);
 
     /*
-        Launches a game.
-        [In] Handle to a game.
+        Launch Minecraft.
+        [In] Handle to Minecraft.
         [Out] The process identifer.
     */
 
     HRESULT WINAPI Game_Launch(PVOID, PDWORD);
 
     /*
-        Configure debug mode for a game.
-        [In] Handle to a game.
+        Configure debug mode for Minecraft.
+        [In] Handle to Minecraft.
         [In] TRUE to enable or FALSE to disable.
     */
     HRESULT WINAPI Game_set_Debug(PVOID, BOOL);
 
     /*
-        Terminate a game.
-        [In] Handle to a game.
+        Terminate Minecraft.
+        [In] Handle to Minecraft.
     */
 
     HRESULT WINAPI Game_Terminate(PVOID);
