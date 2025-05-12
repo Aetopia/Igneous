@@ -1,5 +1,6 @@
 #pragma once
 
+#include <winerror.h>
 #include <minwindef.h>
 
 #ifdef __cplusplus
@@ -34,6 +35,7 @@ extern "C"
         [In] Handle to a game.
         [In] TRUE to enable or FALSE to disable.
     */
+
     HRESULT WINAPI Game_set_Debug(PVOID, BOOL);
 
     /*
@@ -64,6 +66,10 @@ extern "C"
 #include <optional>
 #include <winrt/base.h>
 
+/*
+    Represents a game.
+*/
+
 class Game
 {
   private:
@@ -72,18 +78,31 @@ class Game
   public:
     Game(PVOID This)
     {
-        This = _This;
+        _This = This;
     }
+
+    /*
+        Check if a game is installed.
+    */
 
     bool Installed()
     {
         return Game_get_Installed(_This);
     }
 
+    /*
+        Check if a game is running.
+    */
+
     bool Running()
     {
         return Game_get_Running(_This);
     }
+
+    /*
+        Launch a game.
+        [Returns] The process identifer.
+    */
 
     std::optional<DWORD> Launch()
     {
@@ -98,10 +117,19 @@ class Game
         return dwProcessId;
     }
 
+    /*
+       Configure debug mode for a game.
+       [In] TRUE to enable or FALSE to disable.
+   */
+
     void Debug(bool value)
     {
         winrt::check_hresult(Game_set_Debug(_This, value));
     }
+
+    /*
+        Terminate a game.
+    */
 
     void Terminate()
     {
@@ -109,21 +137,33 @@ class Game
     }
 };
 
+/*
+    Provides access to Minecraft: Bedrock Edition.
+*/
+
 class Minecraft
 {
   private:
-    static inline Game _Release = Minecraft_get_Release(), _Preview = Minecraft_get_Preview();
+    static inline Game _Release{Minecraft_get_Release()}, _Preview{Minecraft_get_Preview()};
 
   public:
-    static Game &Release()
+    /*
+        Provides access to Minecraft.
+    */
+
+    static Game &Release() noexcept
     {
         return _Release;
     }
 
-    static Game &Release()
+    /*
+        Provides access to Minecraft: Preview.
+    */
+
+    static Game &Preview() noexcept
     {
         return _Preview;
     }
-}
+};
 
 #endif
