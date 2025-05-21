@@ -12,14 +12,14 @@ extern "C"
         [In] Handle to a game.
     */
 
-    BOOL WINAPI Game_get_Installed(PVOID);
+    BOOL WINAPI Minecraft_get_Installed(PVOID);
 
     /*
         Check if a game is running.
         [In] Handle to a game.
     */
 
-    BOOL WINAPI Game_get_Running(PVOID);
+    BOOL WINAPI Minecraft_get_Running(PVOID);
 
     /*
         Launch a game.
@@ -27,7 +27,7 @@ extern "C"
         [Out] The process identifer.
     */
 
-    HRESULT WINAPI Game_Launch(PVOID, PDWORD);
+    HRESULT WINAPI Minecraft_Launch(PVOID, PDWORD);
 
     /*
         Configure debug mode for a game.
@@ -35,14 +35,14 @@ extern "C"
         [In] TRUE to enable or FALSE to disable.
     */
 
-    HRESULT WINAPI Game_set_Debug(PVOID, BOOL);
+    HRESULT WINAPI Minecraft_set_Debug(PVOID, BOOL);
 
     /*
         Terminate a game.
         [In] Handle to a game.
     */
 
-    HRESULT WINAPI Game_Terminate(PVOID);
+    HRESULT WINAPI Minecraft_Terminate(PVOID);
 
     /*
         Returns a handle for Minecraft.
