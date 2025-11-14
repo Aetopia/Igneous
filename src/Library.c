@@ -60,6 +60,7 @@ HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_S
         _CreateSwapChainForHwnd(pFactory, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
     static BOOL _ = {};
+   
     if (!_ && SUCCEEDED(hResult))
     {
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &$Present, (PVOID)&_Present);
@@ -106,6 +107,7 @@ LRESULT $WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
 {
     static BOOL _ = {};
+  
     if (!_ && CompareStringOrdinal(L"Bedrock", -1, pWndClass->lpszClassName, -1, FALSE) == CSTR_EQUAL)
     {
         _WndProc = pWndClass->lpfnWndProc;
