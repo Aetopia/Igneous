@@ -53,14 +53,13 @@ HRESULT $ResizeBuffers1(PVOID pSwapChain, UINT BufferCount, UINT Width, UINT Hei
 HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                 PVOID pFullscreenDesc, PVOID pRestrictToOutput, IDXGISwapChain4 **ppSwapChain)
 {
-    static BOOL _ = {};
-
     if (!(pDesc->Flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
         pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     HRESULT hResult =
         _CreateSwapChainForHwnd(pFactory, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
+    static BOOL _ = {};
     if (!_ && SUCCEEDED(hResult))
     {
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &$Present, (PVOID)&_Present);
@@ -107,7 +106,6 @@ LRESULT $WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
 {
     static BOOL _ = {};
-
     if (!_ && CompareStringOrdinal(L"Bedrock", -1, pWndClass->lpszClassName, -1, FALSE) == CSTR_EQUAL)
     {
         _WndProc = pWndClass->lpfnWndProc;
