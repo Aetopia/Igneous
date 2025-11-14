@@ -19,7 +19,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 
 - [Download](https://github.com/Aetopia/Stonecutter/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
 
-- Run the following command in Powershell to find where the game is located:
+- Run the following command in PowerShell to find where the game is located:
 
     ```powershell
     & "$ENV:SystemRoot\explorer.exe" "$((Get-AppxPackage "Microsoft.MinecraftUWP").InstallLocation)"
