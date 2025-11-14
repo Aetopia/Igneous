@@ -28,30 +28,40 @@ HRESULT (*_ResizeBuffers1)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT, PVOID, PV
 
 HRESULT $Present(PVOID pSwapChain, UINT SyncInterval, UINT Flags)
 {
-    return _Present(pSwapChain, SyncInterval, SyncInterval ? 0 : DXGI_PRESENT_ALLOW_TEARING);
+    if (!SyncInterval && !(Flags & DXGI_PRESENT_ALLOW_TEARING))
+        Flags |= DXGI_PRESENT_ALLOW_TEARING;
+    return _Present(pSwapChain, SyncInterval, Flags);
 }
 
 HRESULT $ResizeBuffers(PVOID pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                        UINT SwapChainFlags)
 {
-    return _ResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+    if (!(SwapChainFlags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
+        SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    return _ResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 
 HRESULT $ResizeBuffers1(PVOID pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT Format,
                         UINT SwapChainFlags, PVOID pCreationNodeMask, PVOID ppPresentQueue)
 {
-    return _ResizeBuffers1(pSwapChain, BufferCount, Width, Height, Format, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING,
-                           pCreationNodeMask, ppPresentQueue);
+    if (!(SwapChainFlags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
+        SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    return _ResizeBuffers1(pSwapChain, BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask,
+                           ppPresentQueue);
 }
 
 HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                 PVOID pFullscreenDesc, PVOID pRestrictToOutput, IDXGISwapChain4 **ppSwapChain)
 {
-    pDesc->Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    static BOOL _ = {};
+
+    if (!(pDesc->Flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
+        pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
     HRESULT hResult =
         _CreateSwapChainForHwnd(pFactory, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
-    if (SUCCEEDED(hResult))
+    if (!_ && SUCCEEDED(hResult))
     {
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &$Present, (PVOID)&_Present);
         MH_QueueEnableHook((*ppSwapChain)->lpVtbl->Present);
@@ -63,6 +73,7 @@ HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_S
         MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers1);
 
         MH_ApplyQueued();
+        _ = TRUE;
     }
 
     return hResult;
@@ -95,7 +106,9 @@ LRESULT $WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
 {
-    if (CompareStringOrdinal(L"Bedrock", -1, pWndClass->lpszClassName, -1, FALSE) == CSTR_EQUAL)
+    static BOOL _ = {};
+
+    if (!_ && CompareStringOrdinal(L"Bedrock", -1, pWndClass->lpszClassName, -1, FALSE) == CSTR_EQUAL)
     {
         _WndProc = pWndClass->lpfnWndProc;
         pWndClass->lpfnWndProc = $WndProc;
@@ -104,11 +117,13 @@ ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
         CreateDXGIFactory2(0, &IID_IDXGIFactory7, (PVOID)&pFactory);
 
         MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForHwnd, &$CreateSwapChainForHwnd,
-                      (PVOID *)&_CreateSwapChainForHwnd);
+                      (PVOID)&_CreateSwapChainForHwnd);
         MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForHwnd);
 
         pFactory->lpVtbl->Release(pFactory);
+        _ = TRUE;
     }
+
     return _RegisterClassExW(pWndClass);
 }
 
@@ -119,10 +134,10 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         DisableThreadLibraryCalls(hInstance);
         MH_Initialize();
 
-        MH_CreateHook(ClipCursor, &$ClipCursor, (PVOID *)&_ClipCursor);
+        MH_CreateHook(ClipCursor, &$ClipCursor, (PVOID)&_ClipCursor);
         MH_QueueEnableHook(ClipCursor);
 
-        MH_CreateHook(RegisterClassExW, &$RegisterClassExW, (PVOID *)&_RegisterClassExW);
+        MH_CreateHook(RegisterClassExW, &$RegisterClassExW, (PVOID)&_RegisterClassExW);
         MH_QueueEnableHook(RegisterClassExW);
 
         MH_ApplyQueued();
