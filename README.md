@@ -17,7 +17,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 
 ## Usage
 
-- [Download](https://github.com/Aetopia/Stonecutter/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
+- [Download](https://github.com/Aetopia/Igneous/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
 
 - Run the following command in PowerShell to find where the game is located:
 
@@ -51,5 +51,6 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
     ```bash
     pacman -Syu mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-MinHook --noconfirm
     ```
+
 
 3. Start MSYS2's `UCRT64` environment & run `Build.cmd`.
