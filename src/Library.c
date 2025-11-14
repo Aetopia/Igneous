@@ -6,13 +6,13 @@ __declspec(dllexport) VOID __CxxFrameHandler4(VOID)
 {
 }
 
-PBYTE __wrap_memcpy(PBYTE Destination, PBYTE Source, SIZE_T Count)
+PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
 {
     __movsb(Destination, Source, Count);
     return Destination;
 }
 
-PBYTE __wrap_memset(PBYTE Destination, BYTE Data, SIZE_T Count)
+PVOID __wrap_memset(PVOID Destination, BYTE Data, SIZE_T Count)
 {
     __stosb(Destination, Data, Count);
     return Destination;
