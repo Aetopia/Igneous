@@ -1,7 +1,7 @@
 # Igneous
 
 > [!CAUTION]
-> # **Only supported on Windows x64!**
+> **Only supported on Windows x64!**
 
 Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 
