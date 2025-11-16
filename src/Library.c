@@ -2,8 +2,21 @@
 #include <MinHook.h>
 #include <dxgi1_6.h>
 
-__declspec(dllexport) VOID __CxxFrameHandler4(VOID)
+__declspec(dllexport) EXCEPTION_DISPOSITION __CxxFrameHandler4(PVOID pExcept, PVOID pRN, PVOID pContext, PVOID pDC)
 {
+    static EXCEPTION_DISPOSITION (*_)(PVOID, PVOID, PVOID, PVOID) = {};
+
+    if (!_)
+    {
+        WCHAR szPath[MAX_PATH] = {};
+
+        GetSystemDirectoryW(szPath, MAX_PATH);
+        lstrcatW(szPath, L"\\vcruntime140_1.dll");
+
+        _ = (PVOID)GetProcAddress(LoadLibraryW(szPath), "__CxxFrameHandler4");
+    }
+
+    return _(pExcept, pRN, pContext, pDC);
 }
 
 PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
@@ -55,10 +68,12 @@ HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_S
 {
     if (!(pDesc->Flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
         pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
     HRESULT hResult =
         _CreateSwapChainForHwnd(pFactory, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
     static BOOL _ = {};
+
     if (!_ && SUCCEEDED(hResult))
     {
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &$Present, (PVOID)&_Present);
@@ -73,12 +88,14 @@ HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_S
         MH_ApplyQueued();
         _ = TRUE;
     }
+
     return hResult;
 }
 
 BOOL $ClipCursor(PRECT pRect)
 {
     HWND hWnd = GetActiveWindow();
+
     if (hWnd && pRect)
     {
         GetClientRect(hWnd, pRect);
@@ -89,6 +106,7 @@ BOOL $ClipCursor(PRECT pRect)
         pRect->right = pRect->left;
         pRect->bottom = pRect->top;
     }
+
     return _ClipCursor(pRect);
 }
 
@@ -102,6 +120,7 @@ LRESULT $WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
 {
     static BOOL _ = {};
+
     if (!_ && CompareStringOrdinal(L"Bedrock", -1, pWndClass->lpszClassName, -1, FALSE) == CSTR_EQUAL)
     {
         _WndProc = pWndClass->lpfnWndProc;
@@ -117,6 +136,7 @@ ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
         pFactory->lpVtbl->Release(pFactory);
         _ = TRUE;
     }
+
     return _RegisterClassExW(pWndClass);
 }
 
