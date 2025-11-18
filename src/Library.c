@@ -63,13 +63,13 @@ HRESULT $ResizeBuffers1(PVOID pSwapChain, UINT BufferCount, UINT Width, UINT Hei
 HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                 PVOID pFullscreenDesc, PVOID pRestrictToOutput, IDXGISwapChain4 **ppSwapChain)
 {
+    static BOOL _ = {};
+
     if (!(pDesc->Flags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING))
         pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     HRESULT hResult =
         _CreateSwapChainForHwnd(pFactory, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
-
-    static BOOL _ = {};
 
     if (!_ && SUCCEEDED(hResult))
     {
@@ -109,8 +109,12 @@ BOOL $ClipCursor(PRECT pRect)
 
 LRESULT $WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    if (uMsg == WM_WINDOWPOSCHANGED && GetActiveWindow() == GetCapture())
-        ClipCursor(&(RECT){});
+    if (uMsg == WM_WINDOWPOSCHANGED)
+    {
+        HWND hWndActive = GetActiveWindow(), hWndCapture = GetCapture();
+        if (hWndActive && hWndCapture && hWndActive == hWndCapture)
+            ClipCursor(&(RECT){});
+    }
     return _WndProc(hWnd, uMsg, wParam, lParam);
 }
 
@@ -122,6 +126,7 @@ ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
     {
         _WndProc = pWndClass->lpfnWndProc;
         pWndClass->lpfnWndProc = $WndProc;
+        pWndClass->hCursor = LoadCursorW(NULL, IDC_ARROW);
 
         IDXGIFactory7 *pFactory = {};
         CreateDXGIFactory2(0, &IID_IDXGIFactory7, (PVOID)&pFactory);
