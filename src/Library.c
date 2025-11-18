@@ -12,7 +12,7 @@ __declspec(dllexport) EXCEPTION_DISPOSITION __CxxFrameHandler4(PVOID pExcept, PV
         WCHAR szName[MAX_PATH] = {};
 
         GetSystemDirectoryW(szName, MAX_PATH);
-        PathCombineW(szName, szName, L"VCRUNTIME140_1.dll");
+        PathCombineW(szName, szName, L"vcruntime140_1.dll");
 
         _ = (PVOID)GetProcAddress(LoadLibraryW(szName), "__CxxFrameHandler4");
     }
