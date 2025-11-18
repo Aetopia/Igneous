@@ -1,5 +1,6 @@
 #define INITGUID
 #include <MinHook.h>
+#include <shlwapi.h>
 #include <dxgi1_6.h>
 
 __declspec(dllexport) EXCEPTION_DISPOSITION __CxxFrameHandler4(PVOID pExcept, PVOID pRN, PVOID pContext, PVOID pDC)
@@ -9,7 +10,10 @@ __declspec(dllexport) EXCEPTION_DISPOSITION __CxxFrameHandler4(PVOID pExcept, PV
     if (!_)
     {
         WCHAR szName[MAX_PATH] = {};
-        ExpandEnvironmentStringsW(L"%SystemRoot%\\System32\\vcruntime140_1.dll", szName, MAX_PATH);
+
+        GetSystemDirectoryW(szName, MAX_PATH);
+        PathCombineW(szName, szName, L"VCRUNTIME140_1.dll");
+
         _ = (PVOID)GetProcAddress(LoadLibraryW(szName), "__CxxFrameHandler4");
     }
 
