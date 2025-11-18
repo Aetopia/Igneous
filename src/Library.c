@@ -1,5 +1,5 @@
 #define INITGUID
-#include <MinHook.h>
+#include <minhook.h>
 #include <shlwapi.h>
 #include <dxgi1_6.h>
 
