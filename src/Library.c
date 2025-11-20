@@ -12,7 +12,7 @@ __declspec(dllexport) EXCEPTION_DISPOSITION __CxxFrameHandler4(PVOID pExcept, PV
         WCHAR szName[MAX_PATH] = {};
 
         GetSystemDirectoryW(szName, MAX_PATH);
-        PathCombineW(szName, szName, L"vcruntime140_1.dll");
+        PathCombineW(szName, szName, L"VCRUNTIME140_1.dll");
 
         _ = (PVOID)GetProcAddress(LoadLibraryW(szName), "__CxxFrameHandler4");
     }
@@ -77,13 +77,13 @@ HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_S
 
     if (!_ && SUCCEEDED(hResult))
     {
-        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, &$Present, (PVOID)&_Present);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, $Present, (PVOID)&_Present);
         MH_QueueEnableHook((*ppSwapChain)->lpVtbl->Present);
 
-        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, &$ResizeBuffers, (PVOID)&_ResizeBuffers);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, $ResizeBuffers, (PVOID)&_ResizeBuffers);
         MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers);
 
-        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers1, &$ResizeBuffers1, (PVOID)&_ResizeBuffers1);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers1, $ResizeBuffers1, (PVOID)&_ResizeBuffers1);
         MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers1);
 
         MH_ApplyQueued();
@@ -115,8 +115,10 @@ LRESULT $WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_WINDOWPOSCHANGED)
     {
-        HWND hWndActive = GetActiveWindow(), hWndCapture = GetCapture();
-        if (hWndActive && hWndCapture && hWndActive == hWndCapture)
+        GUITHREADINFO _ = {.cbSize = sizeof _};
+        GetGUIThreadInfo(GetCurrentThreadId(), &_);
+
+        if (_.hwndActive && _.hwndActive == _.hwndCapture && _.hwndActive != _.hwndMoveSize)
             ClipCursor(&(RECT){});
     }
     return _WndProc(hWnd, uMsg, wParam, lParam);
@@ -135,7 +137,7 @@ ATOM $RegisterClassExW(PWNDCLASSEXW pWndClass)
         IDXGIFactory7 *pFactory = {};
         CreateDXGIFactory2(0, &IID_IDXGIFactory7, (PVOID)&pFactory);
 
-        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForHwnd, &$CreateSwapChainForHwnd,
+        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForHwnd, $CreateSwapChainForHwnd,
                       (PVOID)&_CreateSwapChainForHwnd);
         MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForHwnd);
 
@@ -153,10 +155,10 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         DisableThreadLibraryCalls(hInstance);
         MH_Initialize();
 
-        MH_CreateHook(ClipCursor, &$ClipCursor, (PVOID)&_ClipCursor);
+        MH_CreateHook(ClipCursor, $ClipCursor, (PVOID)&_ClipCursor);
         MH_QueueEnableHook(ClipCursor);
 
-        MH_CreateHook(RegisterClassExW, &$RegisterClassExW, (PVOID)&_RegisterClassExW);
+        MH_CreateHook(RegisterClassExW, $RegisterClassExW, (PVOID)&_RegisterClassExW);
         MH_QueueEnableHook(RegisterClassExW);
 
         MH_ApplyQueued();

@@ -16,6 +16,7 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 |[MCPE-230832](https://bugs.mojang.com/browse/MCPE-230832)|Mouse cursor moves in the background during gameplay, disrupting gameplay|
 
 ## Usage
+- [Install](https://aka.ms/vc14/vc_redist.x64.exe) the latest Visual C++ Redistributable.
 
 - [Download](https://github.com/Aetopia/Igneous/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
 
