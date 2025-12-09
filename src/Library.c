@@ -82,6 +82,11 @@ HRESULT $CreateSwapChainForHwnd(PVOID pFactory, PVOID pDevice, HWND hWnd, DXGI_S
     return hResult;
 }
 
+BOOL $SetCursorPos(INT X, INT Y)
+{
+    return FALSE;
+}
+
 BOOL $ClipCursor(PRECT pRect)
 {
     HWND hWnd = GetActiveWindow();
@@ -143,6 +148,9 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
     {
         DisableThreadLibraryCalls(hInstance);
         MH_Initialize();
+
+        MH_CreateHook(SetCursorPos, $SetCursorPos, NULL);
+        MH_QueueEnableHook(SetCursorPos);
 
         MH_CreateHook(ClipCursor, $ClipCursor, (PVOID)&_ClipCursor);
         MH_QueueEnableHook(ClipCursor);
