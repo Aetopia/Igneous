@@ -71,8 +71,8 @@ HRESULT _CreateSwapChainForHwnd(PVOID This, PVOID pDevice, HWND hWnd, DXGI_SWAP_
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, _Present, (PVOID)&_.Present);
         MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, _ResizeBuffers, (PVOID)&_.ResizeBuffers);
         MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers1, _ResizeBuffers1, (PVOID)&_.ResizeBuffers1);
-
         MH_EnableHook(MH_ALL_HOOKS);
+        
         bHooked = TRUE;
     }
 
