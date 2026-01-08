@@ -3,9 +3,6 @@
 
 struct
 {
-    HWND hWnd;
-    volatile BOOL bClipped;
-
     WNDPROC WindowProc;
     PEXCEPTION_HANDLER CxxFrameHandler;
 
@@ -15,6 +12,9 @@ struct
     HRESULT (*ResizeBuffers)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT);
     HRESULT (*CreateSwapChainForHwnd)(PVOID, PVOID, HWND, PVOID, PVOID, PVOID, PVOID);
     HRESULT (*ResizeBuffers1)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT, PVOID, PVOID);
+
+    HWND hWnd;
+    BOOL bClipped;
 } _ = {};
 
 PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
@@ -58,21 +58,20 @@ HRESULT _ResizeBuffers1(PVOID This, UINT BufferCount, UINT Width, UINT Height, D
 HRESULT _CreateSwapChainForHwnd(PVOID This, PVOID pDevice, HWND hWnd, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                 PVOID pFullscreenDesc, PVOID pRestrictToOutput, IDXGISwapChain3 **ppSwapChain)
 {
-    static BOOL bHooked = {};
-
     pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     HRESULT hResult =
         _.CreateSwapChainForHwnd(This, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
+    static BOOL bHooked = {};
+
     if (!bHooked && !hResult)
     {
-        _.hWnd = hWnd;
-
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, _Present, (PVOID)&_.Present);
         MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, _ResizeBuffers, (PVOID)&_.ResizeBuffers);
         MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers1, _ResizeBuffers1, (PVOID)&_.ResizeBuffers1);
         MH_EnableHook(MH_ALL_HOOKS);
-        
+
+        _.hWnd = hWnd;
         bHooked = TRUE;
     }
 
@@ -130,10 +129,9 @@ ATOM _RegisterClassExW(PWNDCLASSEXW pClass)
 
         MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForHwnd, _CreateSwapChainForHwnd,
                       (PVOID)&_.CreateSwapChainForHwnd);
-
         MH_EnableHook(MH_ALL_HOOKS);
-        pFactory->lpVtbl->Release(pFactory);
 
+        pFactory->lpVtbl->Release(pFactory);
         bHooked = TRUE;
     }
 
