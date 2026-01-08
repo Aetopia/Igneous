@@ -4,7 +4,7 @@
 struct
 {
     WNDPROC WindowProc;
-    PEXCEPTION_HANDLER CxxFrameHandler;
+    PEXCEPTION_ROUTINE CxxFrameHandler;
 
     BOOL (*ClipCursor)(PVOID);
     ATOM (*RegisterClassExW)(PVOID);
