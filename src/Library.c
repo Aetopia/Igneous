@@ -118,7 +118,9 @@ ATOM _RegisterClassExW(PWNDCLASSEXW pClass)
     {
         _.WindowProc = pClass->lpfnWndProc;
         pClass->lpfnWndProc = _WindowProc;
+
         pClass->hCursor = LoadCursorW(NULL, IDC_ARROW);
+        pClass->hbrBackground = GetStockObject(BLACK_BRUSH);
 
         MH_CreateHook(SetCursor, (PVOID)_SetCursor, NULL);
         MH_CreateHook(SetCursorPos, (PVOID)_SetCursorPos, NULL);
