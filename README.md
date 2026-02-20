@@ -17,11 +17,11 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 
 ### Tweaks
 
+- Cursor changes are disallowed to prevent a change from lingering. 
+
 - The game window's background is now black to prevent flashbangs.
 
 - The game window's menu is now disabled preventing unwanted freezes.
-
-- Cursor changes are disallowed to prevent a change from lingering. 
 
 - If locked, the cursor's position is updated when the game window is moved.
 
