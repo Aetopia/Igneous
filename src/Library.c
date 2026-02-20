@@ -105,8 +105,23 @@ BOOL _ClipCursor(PRECT pRect)
 
 LRESULT _WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    if (uMsg == WM_WINDOWPOSCHANGED && _.bClipped)
-        ClipCursor(&(RECT){});
+    switch (uMsg)
+    {
+    case WM_WINDOWPOSCHANGED:
+        if (_.bClipped)
+            ClipCursor(&(RECT){});
+        break;
+
+    case WM_SYSCOMMAND:
+        switch (GET_SC_WPARAM(wParam))
+        {
+        case SC_KEYMENU:
+        case SC_MOUSEMENU:
+            return 0;
+        }
+        break;
+    }
+
     return CallWindowProcW(_.WindowProc, hWnd, uMsg, wParam, lParam);
 }
 
