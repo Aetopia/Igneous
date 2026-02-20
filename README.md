@@ -19,11 +19,11 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 
 - Cursor changes are disallowed to prevent a change from lingering. 
 
-- The game window's background is now black to prevent flashbangs.
+- The game's window background is now black to prevent flashbangs.
 
-- The game window's menu is now disabled preventing unwanted freezes.
+- The game's window menu is now disabled preventing unwanted freezes.
 
-- If locked, the cursor's position is updated when the game window is moved.
+- If locked, the cursor's position is updated when the game's window is moved.
 
 ## Usage
 - [Download](https://github.com/Aetopia/Igneous/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
