@@ -1,6 +1,6 @@
 #include <windows.h>
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 0, 9, 2
+FILEVERSION 1, 0, 9, 3
 BEGIN
 BLOCK "StringFileInfo"
 BEGIN
@@ -9,7 +9,7 @@ BEGIN
 VALUE "CompanyName", "Aetopia"
 VALUE "FileDescription", "Igneous"
 VALUE "ProductName", "Igneous"
-VALUE "ProductVersion",	"1.0.9.2"
+VALUE "ProductVersion",	"1.0.9.3"
 VALUE "LegalCopyright", "Copyright (C) 2025 - 26 Aetopia"
 END
 END
