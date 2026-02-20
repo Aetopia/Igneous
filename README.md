@@ -15,6 +15,16 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 |[MCPE-166745](https://bugs.mojang.com/browse/MCPE-166745)|FPS is capped at double the screen's refresh rate when v-sync is disabled|
 |[MCPE-230832](https://bugs.mojang.com/browse/MCPE-230832)|Mouse cursor moves in the background during gameplay, disrupting gameplay|
 
+### Tweaks
+
+- The game window's background is now black to prevent flashbangs.
+
+- The game window's menu is now disabled preventing unwanted freezes.
+
+- Cursor changes are disallowed to prevent a change from lingering. 
+
+- If locked, the cursor's position is updated when the game window is moved.
+
 ## Usage
 - [Download](https://github.com/Aetopia/Igneous/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
 
