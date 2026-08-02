@@ -3,7 +3,7 @@
 > [!CAUTION]
 > **Only supported on Windows x64!**
 
-Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
+A runtime patch for Minecraft: Bedrock Edition (GDK) to fix various bugs.
 
 ## Fixes
 
@@ -17,13 +17,13 @@ Fixes various bugs related to Minecraft: Bedrock Edition (GDK).
 
 ### Tweaks
 
-- Cursor changes are disallowed to prevent a change from lingering. 
-
 - The game's window background is now black to prevent flashbangs.
 
 - The game's window menu is now disabled preventing unwanted freezes.
 
-- If locked, the cursor's position is updated when the game's window is moved.
+- Cursor changes are disallowed to prevent cursor changes from lingering. 
+
+- If the cursor is locked, its position is updated when the game's window is moved.
 
 ## Usage
 - [Download](https://github.com/Aetopia/Igneous/releases/latest/download/vcruntime140_1.dll) the latest release of Igneous.
