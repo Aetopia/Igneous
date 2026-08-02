@@ -1,6 +1,9 @@
 #include <minhook.h>
 #include <dxgi1_4.h>
 
+#include <stdbool.h>
+#include <stdatomic.h>
+
 struct
 {
     WNDPROC WindowProc;
@@ -14,7 +17,7 @@ struct
     HRESULT (*ResizeBuffers1)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT, PVOID, PVOID);
 
     HWND hWnd;
-    BOOL bClipped;
+    atomic_bool bClipped;
 } _ = {};
 
 PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
@@ -62,11 +65,10 @@ HRESULT $CreateSwapChainForHwnd(PVOID This, PVOID pDevice, HWND hWnd, DXGI_SWAP_
     HRESULT hResult =
         _.CreateSwapChainForHwnd(This, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
-    static BOOL bHooked = {};
+    static atomic_bool bHooked = false;
 
-    if (SUCCEEDED(hResult) && !bHooked)
+    if (SUCCEEDED(hResult) && !atomic_exchange(&bHooked, true))
     {
-        bHooked = TRUE;
         _.hWnd = hWnd;
 
         MH_CreateHook((*ppSwapChain)->lpVtbl->Present, $Present, (PVOID)&_.Present);
@@ -91,7 +93,7 @@ HCURSOR $SetCursor(HCURSOR hCursor)
 
 BOOL $ClipCursor(PRECT pRect)
 {
-    _.bClipped = !!pRect;
+    atomic_store(&_.bClipped, pRect);
 
     if (pRect)
     {
@@ -112,7 +114,7 @@ LRESULT $WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_WINDOWPOSCHANGED:
-        if (_.bClipped)
+        if (atomic_load(&_.bClipped))
             ClipCursor(&(RECT){});
         break;
 
@@ -131,12 +133,11 @@ LRESULT $WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 ATOM $RegisterClassExW(PWNDCLASSEXW pClass)
 {
-    static BOOL bHooked = {};
+    static atomic_bool bHooked = false;
 
-    if (CompareStringOrdinal(L"Bedrock", -1, pClass->lpszClassName, -1, FALSE) == CSTR_EQUAL && !bHooked)
+    if (CompareStringOrdinal(L"Bedrock", -1, pClass->lpszClassName, -1, FALSE) == CSTR_EQUAL &&
+        !atomic_exchange(&bHooked, false))
     {
-        bHooked = TRUE;
-
         _.WindowProc = pClass->lpfnWndProc;
         pClass->lpfnWndProc = $WindowProc;
 
@@ -165,10 +166,13 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
     if (dwReason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(hInstance);
-        _.CxxFrameHandler = (PVOID)GetProcAddress(GetModuleHandleW(L"UCRTBASE"), "__CxxFrameHandler4");
+
+        HMODULE hModule = GetModuleHandleW(L"UCRTBASE");
+        _.CxxFrameHandler = (PVOID)GetProcAddress(hModule, "__CxxFrameHandler4");
 
         MH_Initialize();
         MH_CreateHook(RegisterClassExW, &$RegisterClassExW, (PVOID)&_.RegisterClassExW);
+        
         MH_EnableHook(MH_ALL_HOOKS);
     }
     return TRUE;
