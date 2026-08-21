@@ -2,9 +2,9 @@
 cd "%~dp0/src"
 
 rd /q /s "bin"
-md "bin"
-
 rd /q /s "obj"
+
+md "bin"
 md "obj"
 
 windres.exe -i "Resources\Library.rc" -o "obj\Library.o"
