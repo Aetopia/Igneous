@@ -1,20 +1,24 @@
 #include <minhook.h>
 #include <dxgi1_4.h>
 
+#include <stdbool.h>
+#include <stdatomic.h>
+
 struct
 {
     WNDPROC WindowProc;
-    PEXCEPTION_ROUTINE CxxFrameHandler;
+    PEXCEPTION_HANDLER CxxFrameHandler;
 
     BOOL (*ClipCursor)(PVOID);
     ATOM (*RegisterClassExW)(PVOID);
+
     HRESULT (*Present)(PVOID, UINT, UINT);
     HRESULT (*ResizeBuffers)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT);
     HRESULT (*CreateSwapChainForHwnd)(PVOID, PVOID, HWND, PVOID, PVOID, PVOID, PVOID);
     HRESULT (*ResizeBuffers1)(PVOID, UINT, UINT, UINT, DXGI_FORMAT, UINT, PVOID, PVOID);
 
     HWND hWnd;
-    BOOL bClipped;
+    atomic_bool bClipped;
 } _ = {};
 
 PVOID __wrap_memcpy(PVOID Destination, PVOID Source, SIZE_T Count)
@@ -34,63 +38,60 @@ __declspec(dllexport) EXCEPTION_DISPOSITION __CxxFrameHandler4(PVOID pExcept, PV
     return _.CxxFrameHandler(pExcept, pRN, pContext, pDC);
 }
 
-HRESULT _Present(PVOID This, UINT SyncInterval, UINT Flags)
+HRESULT $Present(PVOID This, UINT SyncInterval, UINT Flags)
 {
     if (!SyncInterval)
         Flags |= DXGI_PRESENT_ALLOW_TEARING;
     return _.Present(This, SyncInterval, Flags);
 }
 
-HRESULT _ResizeBuffers(PVOID This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
+HRESULT $ResizeBuffers(PVOID This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat,
                        UINT SwapChainFlags)
 {
-    return _.ResizeBuffers(This, BufferCount, Width, Height, NewFormat,
-                           SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+    SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    return _.ResizeBuffers(This, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 
-HRESULT _ResizeBuffers1(PVOID This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT Format, UINT SwapChainFlags,
+HRESULT $ResizeBuffers1(PVOID This, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT Format, UINT SwapChainFlags,
                         PVOID pCreationNodeMask, PVOID ppPresentQueue)
 {
-    return _.ResizeBuffers1(This, BufferCount, Width, Height, Format,
-                            SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING, pCreationNodeMask, ppPresentQueue);
+    SwapChainFlags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    return _.ResizeBuffers1(This, BufferCount, Width, Height, Format, SwapChainFlags, pCreationNodeMask,
+                            ppPresentQueue);
 }
 
-HRESULT _CreateSwapChainForHwnd(PVOID This, PVOID pDevice, HWND hWnd, DXGI_SWAP_CHAIN_DESC1 *pDesc,
+HRESULT $CreateSwapChainForHwnd(PVOID This, PVOID pDevice, HWND hWnd, DXGI_SWAP_CHAIN_DESC1 *pDesc,
                                 PVOID pFullscreenDesc, PVOID pRestrictToOutput, IDXGISwapChain3 **ppSwapChain)
 {
     pDesc->Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     HRESULT hResult =
         _.CreateSwapChainForHwnd(This, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
-    static BOOL bHooked = {};
+    static atomic_bool bHooked = false;
 
-    if (!bHooked && !hResult)
+    if (SUCCEEDED(hResult) && !atomic_exchange(&bHooked, true))
     {
-        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, _Present, (PVOID)&_.Present);
-        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, _ResizeBuffers, (PVOID)&_.ResizeBuffers);
-        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers1, _ResizeBuffers1, (PVOID)&_.ResizeBuffers1);
-        MH_EnableHook(MH_ALL_HOOKS);
-
         _.hWnd = hWnd;
-        bHooked = TRUE;
+
+        MH_CreateHook((*ppSwapChain)->lpVtbl->Present, $Present, (PVOID)&_.Present);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers, $ResizeBuffers, (PVOID)&_.ResizeBuffers);
+        MH_CreateHook((*ppSwapChain)->lpVtbl->ResizeBuffers1, $ResizeBuffers1, (PVOID)&_.ResizeBuffers1);
+
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->Present);
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers);
+        MH_QueueEnableHook((*ppSwapChain)->lpVtbl->ResizeBuffers1);
+
+        MH_ApplyQueued();
     }
 
     return hResult;
 }
 
-BOOL _SetCursorPos(INT X, INT Y)
+BOOL $ClipCursor(PRECT pRect)
 {
-    return FALSE;
-}
+    atomic_store(&_.bClipped, pRect);
 
-HCURSOR _SetCursor(HCURSOR hCursor)
-{
-    return NULL;
-}
-
-BOOL _ClipCursor(PRECT pRect)
-{
-    if ((_.bClipped = !!pRect))
+    if (pRect)
     {
         GetClientRect(_.hWnd, pRect);
         pRect->top = (pRect->bottom - pRect->top) / 2;
@@ -100,10 +101,11 @@ BOOL _ClipCursor(PRECT pRect)
         pRect->right = pRect->left;
         pRect->bottom = pRect->top;
     }
+
     return _.ClipCursor(pRect);
 }
 
-LRESULT _WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT $WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
@@ -111,45 +113,31 @@ LRESULT _WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         if (_.bClipped)
             ClipCursor(&(RECT){});
         break;
-
-    case WM_SYSCOMMAND:
-        switch (GET_SC_WPARAM(wParam))
-        {
-        case SC_KEYMENU:
-        case SC_MOUSEMENU:
-            return 0;
-        }
-        break;
     }
-
     return CallWindowProcW(_.WindowProc, hWnd, uMsg, wParam, lParam);
 }
 
-ATOM _RegisterClassExW(PWNDCLASSEXW pClass)
+ATOM $RegisterClassExW(PWNDCLASSEXW pClass)
 {
-    static BOOL bHooked = {};
+    static atomic_bool bHooked = false;
 
-    if (!bHooked && CompareStringOrdinal(L"Bedrock", -1, pClass->lpszClassName, -1, FALSE) == CSTR_EQUAL)
+    if (CompareStringOrdinal(L"Bedrock", -1, pClass->lpszClassName, -1, FALSE) == CSTR_EQUAL &&
+        !atomic_exchange(&bHooked, true))
     {
         _.WindowProc = pClass->lpfnWndProc;
-        pClass->lpfnWndProc = _WindowProc;
+        pClass->lpfnWndProc = $WindowProc;
 
         pClass->hCursor = LoadCursorW(NULL, IDC_ARROW);
         pClass->hbrBackground = GetStockObject(BLACK_BRUSH);
 
-        MH_CreateHook(SetCursor, (PVOID)_SetCursor, NULL);
-        MH_CreateHook(SetCursorPos, (PVOID)_SetCursorPos, NULL);
-        MH_CreateHook(ClipCursor, _ClipCursor, (PVOID)&_.ClipCursor);
-
         IDXGIFactory2 *pFactory = {};
         CreateDXGIFactory(&IID_IDXGIFactory2, (PVOID)&pFactory);
 
-        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForHwnd, _CreateSwapChainForHwnd,
+        MH_CreateHook(pFactory->lpVtbl->CreateSwapChainForHwnd, $CreateSwapChainForHwnd,
                       (PVOID)&_.CreateSwapChainForHwnd);
-        MH_EnableHook(MH_ALL_HOOKS);
 
+        MH_EnableHook(pFactory->lpVtbl->CreateSwapChainForHwnd);
         pFactory->lpVtbl->Release(pFactory);
-        bHooked = TRUE;
     }
 
     return _.RegisterClassExW(pClass);
@@ -160,11 +148,19 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
     if (dwReason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(hInstance);
-        _.CxxFrameHandler = (PVOID)GetProcAddress(GetModuleHandleW(L"UCRTBASE"), "__CxxFrameHandler4");
+
+        HMODULE hModule = GetModuleHandleW(L"UCRTBASE");
+        _.CxxFrameHandler = (PVOID)GetProcAddress(hModule, "__CxxFrameHandler4");
 
         MH_Initialize();
-        MH_CreateHook(RegisterClassExW, &_RegisterClassExW, (PVOID)&_.RegisterClassExW);
-        MH_EnableHook(MH_ALL_HOOKS);
+
+        MH_CreateHook(ClipCursor, $ClipCursor, (PVOID)&_.ClipCursor);
+        MH_CreateHook(RegisterClassExW, &$RegisterClassExW, (PVOID)&_.RegisterClassExW);
+
+        MH_QueueEnableHook(ClipCursor);
+        MH_QueueEnableHook(RegisterClassExW);
+
+        MH_ApplyQueued();
     }
     return TRUE;
 }
