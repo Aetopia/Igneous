@@ -155,7 +155,7 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         MH_Initialize();
 
         MH_CreateHook(ClipCursor, $ClipCursor, (PVOID)&_.ClipCursor);
-        MH_CreateHook(RegisterClassExW, &$RegisterClassExW, (PVOID)&_.RegisterClassExW);
+        MH_CreateHook(RegisterClassExW, $RegisterClassExW, (PVOID)&_.RegisterClassExW);
 
         MH_QueueEnableHook(ClipCursor);
         MH_QueueEnableHook(RegisterClassExW);

@@ -1,5 +1,7 @@
 @echo off
-cd "%~dp0/src"
+
+cd "%~dp0"
+cd "src"
 
 rd /q /s "bin"
 rd /q /s "obj"
