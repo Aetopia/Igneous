@@ -67,9 +67,9 @@ HRESULT $CreateSwapChainForHwnd(PVOID This, PVOID pDevice, HWND hWnd, DXGI_SWAP_
     HRESULT hResult =
         _.CreateSwapChainForHwnd(This, pDevice, hWnd, pDesc, pFullscreenDesc, pRestrictToOutput, ppSwapChain);
 
-    static atomic_bool bHooked = false;
+    static atomic_flag bHooked = {};
 
-    if (SUCCEEDED(hResult) && !atomic_exchange(&bHooked, true))
+    if (SUCCEEDED(hResult) && !atomic_flag_test_and_set(&bHooked))
     {
         _.hWnd = hWnd;
 
@@ -110,7 +110,7 @@ LRESULT $WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_WINDOWPOSCHANGED:
-        if (_.bClipped)
+        if (atomic_load(&_.bClipped))
             ClipCursor(&(RECT){});
         break;
     }
@@ -119,10 +119,10 @@ LRESULT $WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 ATOM $RegisterClassExW(PWNDCLASSEXW pClass)
 {
-    static atomic_bool bHooked = false;
+    static atomic_flag bHooked = {};
 
     if (CompareStringOrdinal(L"Bedrock", -1, pClass->lpszClassName, -1, FALSE) == CSTR_EQUAL &&
-        !atomic_exchange(&bHooked, true))
+        !atomic_flag_test_and_set(&bHooked))
     {
         _.WindowProc = pClass->lpfnWndProc;
         pClass->lpfnWndProc = $WindowProc;
