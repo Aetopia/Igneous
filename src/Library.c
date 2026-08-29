@@ -1,6 +1,6 @@
+#include <dwmapi.h>
 #include <minhook.h>
 #include <dxgi1_4.h>
-
 #include <stdbool.h>
 #include <stdatomic.h>
 
@@ -153,14 +153,14 @@ BOOL DllMain(HINSTANCE hInstance, DWORD dwReason, PVOID pReserved)
         _.CxxFrameHandler = (PVOID)GetProcAddress(hModule, "__CxxFrameHandler4");
 
         MH_Initialize();
-
         MH_CreateHook(ClipCursor, $ClipCursor, (PVOID)&_.ClipCursor);
         MH_CreateHook(RegisterClassExW, $RegisterClassExW, (PVOID)&_.RegisterClassExW);
 
         MH_QueueEnableHook(ClipCursor);
         MH_QueueEnableHook(RegisterClassExW);
-
         MH_ApplyQueued();
+
+        DwmEnableMMCSS(TRUE);
     }
     return TRUE;
 }

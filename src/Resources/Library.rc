@@ -1,15 +1,15 @@
 #include <windows.h>
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 0, 10, 1
+FILEVERSION 1, 0, 10, 2
 BEGIN
 BLOCK "StringFileInfo"
 BEGIN
 BLOCK "040904b0"
 BEGIN
 VALUE "CompanyName", "Aetopia"
-VALUE "FileDescription", "Igneous"
 VALUE "ProductName", "Igneous"
-VALUE "ProductVersion",	"1.0.10.1"
+VALUE "FileDescription", "Igneous"
+VALUE "ProductVersion",	"1.0.10.2"
 VALUE "LegalCopyright", "https://github.com/Aetopia/Igneous"
 END
 END
