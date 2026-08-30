@@ -114,7 +114,7 @@ LRESULT $WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             ClipCursor(&(RECT){});
         break;
     }
-    return CallWindowProcW(_.WindowProc, hWnd, uMsg, wParam, lParam);
+    return _.WindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 ATOM $RegisterClassExW(PWNDCLASSEXW pClass)
