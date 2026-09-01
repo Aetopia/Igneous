@@ -1,20 +1,20 @@
-#include <windows.h>
+#include <winver.h>
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION 1, 0, 10, 3
-BEGIN
-BLOCK "StringFileInfo"
-BEGIN
-BLOCK "040904b0"
-BEGIN
-VALUE "CompanyName", "Aetopia"
-VALUE "ProductName", "Igneous"
-VALUE "FileDescription", "Igneous"
-VALUE "ProductVersion",	"1.0.10.3"
-VALUE "LegalCopyright", "https://github.com/Aetopia/Igneous"
-END
-END
-BLOCK "VarFileInfo"
-BEGIN
-VALUE "Translation", 0x0, 1252
-END
-END
+FILEVERSION 1, 0, 10, 4
+{
+    BLOCK "StringFileInfo"
+    {
+        BLOCK "000004B0"
+        {
+            VALUE "CompanyName", "Aetopia"
+            VALUE "ProductName", "Igneous"
+            VALUE "FileDescription", "Igneous"
+            VALUE "ProductVersion",	"1.0.10.4"
+            VALUE "LegalCopyright", "https://github.com/Aetopia/Igneous"
+        }
+    }
+    BLOCK "VarFileInfo"
+    {
+        VALUE "Translation", 0x0, 1200
+    }
+}
