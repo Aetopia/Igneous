@@ -1,5 +1,5 @@
 #include <dwmapi.h>
-#include <minhook.h>
+#include <MinHook.h>
 #include <dxgi1_4.h>
 #include <stdbool.h>
 #include <stdatomic.h>
