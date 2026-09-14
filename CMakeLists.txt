@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Igneous LANGUAGES C)
+project("" LANGUAGES C)
 
 set(CMAKE_STANDARD_LIBRARIES "")
 set(CMAKE_EXE_LINKER_FLAGS_INIT "")
